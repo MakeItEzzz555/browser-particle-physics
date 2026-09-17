@@ -8,19 +8,19 @@ Standalone HTML particle/physics visual experiment.
 
 ## Features
 
-Browser rendering, interactive visual simulation.
+Three.js renders particles inside cube, sphere or pyramid containers. Controls adjust particle count, container size, gravity and appearance; drag to orbit, scroll to zoom, or Shift+drag to spin the container.
 
 ## Tech Stack
 
-HTML / CSS / JavaScript
+HTML / CSS / JavaScript / Three.js
 
 ## Getting Started
 
-Open `particlePhysX.html` in a modern browser and use its built-in simulation controls. The application is a single HTML file with embedded styling and JavaScript.
+Open `particlePhysX.html` in a modern browser with internet access for the pinned Three.js CDN modules and fonts, and use its built-in simulation controls. The application is a single HTML file with embedded styling and JavaScript.
 
 ## Validation
 
-Source appears complete for the described historical/demo scope; runtime not revalidated during archival.
+Source was inspected; browser rendering, CDN loading and simulation controls were not runtime tested during archival.
 
 ## Notes
 
