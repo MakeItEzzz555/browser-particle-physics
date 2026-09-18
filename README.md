@@ -14,6 +14,12 @@ Three.js renders particles inside cube, sphere or pyramid containers. Controls a
 
 HTML / CSS / JavaScript / Three.js
 
+## Preview
+
+Running locally in a browser: the particle sandbox with its sphere container and gravity set to zero using the controls.
+
+![Particle sandbox](docs/screenshots/particle-sandbox.png)
+
 ## Getting Started
 
 Open `particlePhysX.html` in a modern browser with internet access for the pinned Three.js CDN modules and fonts, and use its built-in simulation controls. The application is a single HTML file with embedded styling and JavaScript.
