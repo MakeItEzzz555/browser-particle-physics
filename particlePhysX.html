@@ -217,6 +217,13 @@
         let GLOW_INTENSITY = 0.8;
         let GLOW_RADIUS = 0.3;
         let PARTICLE_COLOR = new THREE.Color(0x00ffff);
+        const particleMaterial = new THREE.MeshPhysicalMaterial({
+            color: PARTICLE_COLOR,
+            emissive: PARTICLE_COLOR,
+            emissiveIntensity: GLOW_INTENSITY,
+            roughness: 0.3,
+            metalness: 0.2
+        });
 
         // --- Initialization on Load ---
         window.addEventListener('DOMContentLoaded', () => {
@@ -303,10 +310,9 @@
 
         // --- Particle Management (Globally Exposed) ---
         window.resetParticles = function() {
-            // Dispose and remove old meshes
+            // Remove old meshes. Geometry and material are shared and remain reusable.
             particleMeshes.forEach(mesh => {
                 simGroup.remove(mesh);
-                mesh.material.dispose(); 
             });
             particleMeshes.length = 0;
             particleVelocities.length = 0;
@@ -344,15 +350,7 @@
             };
 
             for (let i = 0; i < NUM_PARTICLES; i++) {
-                const material = new THREE.MeshPhysicalMaterial({
-                    color: PARTICLE_COLOR,
-                    emissive: PARTICLE_COLOR, 
-                    emissiveIntensity: GLOW_INTENSITY,
-                    roughness: 0.3,
-                    metalness: 0.2
-                }); 
-
-                const mesh = new THREE.Mesh(particleGeometry, material);
+                const mesh = new THREE.Mesh(particleGeometry, particleMaterial);
                 mesh.position.copy(spawn());
                 simGroup.add(mesh);
                 particleMeshes.push(mesh);
@@ -416,12 +414,8 @@
                 const newColor = new THREE.Color(event.target.value);
                 PARTICLE_COLOR.copy(newColor);
                 
-                // Update all meshes in the scene
-                particleMeshes.forEach(mesh => {
-                    mesh.material.color.copy(newColor);
-                    mesh.material.emissive.copy(newColor); 
-                    mesh.material.needsUpdate = true;
-                });
+                particleMaterial.color.copy(newColor);
+                particleMaterial.emissive.copy(newColor);
             });
 
             // Container shape select
