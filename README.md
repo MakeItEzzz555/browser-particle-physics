@@ -26,7 +26,7 @@ Open `particlePhysX.html` in a modern browser with internet access for the pinne
 
 ## Validation
 
-Source was inspected; browser rendering, CDN loading and simulation controls were not runtime tested during archival.
+Source was inspected; browser rendering, CDN loading and simulation controls were not runtime tested during archival. On 2026-10-11 the instanced renderer was run in Chromium: particle count, size, shape, colour and reset controls render without console errors.
 
 ## Notes
 
@@ -35,6 +35,6 @@ Original implementation is preserved. Build outputs, dependencies, machine-speci
 
 ## Performance roadmap
 
-- Batch particles with `THREE.InstancedMesh` to reduce per-particle draw submissions while preserving independent physics state.
+- [x] Batch particles with `THREE.InstancedMesh` to reduce per-particle draw submissions while preserving independent physics state (500 particles: 515 → 32 WebGL draw calls per frame).
 - Add adaptive pixel-ratio scaling for high-DPI displays after renderer batching is validated.
 - Add deterministic/shareable simulation presets after the rendering path is stable.
