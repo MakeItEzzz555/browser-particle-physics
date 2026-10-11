@@ -199,8 +199,11 @@
         let CONTAINER_SIZE = 15;
         let PARTICLE_RADIUS = 0.5; 
         
-        const particleMeshes = [];
-        const particleVelocities = []; 
+        // One InstancedMesh draws every particle in a single call; physics state stays per particle.
+        let particleInstances;
+        const particlePositions = [];
+        const particleVelocities = [];
+        const instanceMatrix = new THREE.Matrix4();
         let clock; 
         
         // Geometry holder (rebuilt when particle size changes)
@@ -262,6 +265,13 @@
             scene.add(simGroup);
             rebuildContainerVisuals();
 
+            const maxParticles = Number(document.getElementById('particleCount-slider').max);
+            particleInstances = new THREE.InstancedMesh(particleGeometry, particleMaterial, maxParticles);
+            particleInstances.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+            // r137 culls instances by the base geometry's bounds at the origin, which would hide moving particles.
+            particleInstances.frustumCulled = false;
+            simGroup.add(particleInstances);
+
             // --- Post-processing for Bloom Effect ---
             composer = new EffectComposer(renderer);
             composer.addPass(new RenderPass(scene, camera));
@@ -310,11 +320,7 @@
 
         // --- Particle Management (Globally Exposed) ---
         window.resetParticles = function() {
-            // Remove old meshes. Geometry and material are shared and remain reusable.
-            particleMeshes.forEach(mesh => {
-                simGroup.remove(mesh);
-            });
-            particleMeshes.length = 0;
+            particlePositions.length = 0;
             particleVelocities.length = 0;
 
             const spawn = () => {
@@ -350,10 +356,7 @@
             };
 
             for (let i = 0; i < NUM_PARTICLES; i++) {
-                const mesh = new THREE.Mesh(particleGeometry, particleMaterial);
-                mesh.position.copy(spawn());
-                simGroup.add(mesh);
-                particleMeshes.push(mesh);
+                particlePositions.push(spawn());
                 
                 particleVelocities.push(new THREE.Vector3(
                     Math.random() * 0.2 - 0.1,
@@ -361,6 +364,16 @@
                     Math.random() * 0.2 - 0.1
                 ));
             }
+            particleInstances.count = NUM_PARTICLES;
+            syncInstances();
+        }
+
+        function syncInstances() {
+            for (let i = 0; i < particlePositions.length; i++) {
+                const p = particlePositions[i];
+                particleInstances.setMatrixAt(i, instanceMatrix.makeTranslation(p.x, p.y, p.z));
+            }
+            particleInstances.instanceMatrix.needsUpdate = true;
         }
 
         // --- Control Setup ---
@@ -395,6 +408,7 @@
                         PARTICLE_RADIUS = value;
                         particleGeometry.dispose();
                         particleGeometry = new THREE.SphereGeometry(PARTICLE_RADIUS, 16, 16);
+                        particleInstances.geometry = particleGeometry;
                         window.resetParticles();
                     }
                 });
@@ -545,10 +559,9 @@
             const dt = Math.min(delta, MAX_DELTA);
 
             // Physics applied per particle
-            for (let i = 0; i < particleMeshes.length; i++) {
-                const mesh = particleMeshes[i];
+            for (let i = 0; i < particlePositions.length; i++) {
                 const velocity = particleVelocities[i];
-                const position = mesh.position;
+                const position = particlePositions[i];
 
                 // 1. Apply Forces (Gravity)
                 // We use 60 to normalize the gravity constant 'GRAVITY_STRENGTH' which was tuned for 60fps.
@@ -569,6 +582,8 @@
                     enforceCube(position, velocity);
                 }
             }
+
+            syncInstances();
 
             controls.update(); 
             composer.render();
